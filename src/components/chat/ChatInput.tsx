@@ -2,7 +2,7 @@ import React from 'react';
 import { Send, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useChatStore } from '@/lib/store';
-import { generateResponse } from './ResponseGenerator';
+import { responseManager } from '@/lib/responses/responseManager';
 
 export const ChatInput: React.FC = () => {
   const [input, setInput] = React.useState('');
@@ -10,7 +10,7 @@ export const ChatInput: React.FC = () => {
   const addMessage = useChatStore(state => state.addMessage);
   const activeChat = useChatStore(state => state.activeChat);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!input.trim() || !activeChat) return;
 
     // Add user message
@@ -21,13 +21,13 @@ export const ChatInput: React.FC = () => {
       timestamp: Date.now(),
     });
 
-    // Generate response based on keywords
-    const response = generateResponse(input);
+    // Generate response using new response manager
+    const response = await responseManager.getResponse(input);
     
     // Add assistant message
     addMessage(activeChat, {
       id: crypto.randomUUID(),
-      content: response,
+      content: response.content,
       role: 'assistant',
       timestamp: Date.now(),
     });

@@ -31,6 +31,8 @@ const ChatContainer = () => {
               content={message.content}
               role={message.role}
               timestamp={new Date(message.timestamp)}
+              type={message.type}
+              metadata={message.metadata}
             />
           ))}
         </div>
