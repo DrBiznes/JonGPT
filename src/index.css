@@ -1,0 +1,129 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+  
+:root {
+  --main: #ff6b6b;
+  --overlay: rgba(0, 0, 0, 0.8);
+  --bg: #272933;
+  --bw: #212121;
+  --blank: #fff;
+  --border: #000;
+  --text: #e6e6e6;
+  --mtext: #000;
+  --ring: #fff;
+  --ring-offset: #212121;
+
+  --border-radius: 4px;
+  --box-shadow-x: 4px;
+  --box-shadow-y: 4px;
+  --reverse-box-shadow-x: -4px;
+  --reverse-box-shadow-y: -4px;
+  --base-font-weight: 500;
+  --heading-font-weight: 900;
+  --shadow: var(--box-shadow-x) var(--box-shadow-y) 0px 0px var(--border);
+  --input-shadow: inset 2px 2px 0px 0px var(--border);
+  --hover-transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+/* Neo-brutalist component styles */
+.neo-input {
+  box-shadow: var(--input-shadow);
+  transition: var(--hover-transition);
+}
+
+.neo-input:focus {
+  box-shadow: none;
+  transform: translate(2px, 2px);
+}
+
+/* Custom scrollbar */
+.neo-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.neo-scrollbar::-webkit-scrollbar-track {
+  background: var(--bw);
+  border: 2px solid var(--border);
+}
+
+.neo-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--main);
+  border: 2px solid var(--border);
+}
+
+/* Quick action buttons */
+.quick-action {
+  transition: var(--hover-transition);
+}
+
+.quick-action:hover {
+  transform: translate(4px, 4px);
+  box-shadow: none;
+  background-color: #272933;
+}
+
+/* Chat list items */
+.chat-item {
+  padding: 0.75rem;
+  border: 2px solid var(--border);
+  margin-bottom: 0.5rem;
+  transition: var(--hover-transition);
+  background: #212121;
+  color: #e6e6e6;
+}
+
+.chat-item:hover {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+  background: #272933;
+}
+
+.chat-item.active {
+  background: var(--main);
+  color: var(--mtext);
+}
+
+/* Message components */
+.message {
+  @apply p-4 rounded-base border-2 border-border mb-4 transition-all;
+}
+
+.message-user {
+  @apply bg-[#272933] text-[#e6e6e6];
+}
+
+.message-assistant {
+  @apply bg-[#212121] text-[#e6e6e6];
+}
+
+/* Code block styling */
+.code-block {
+  @apply bg-[#1a1a1a] rounded-base p-4 my-2 relative;
+}
+
+.code-block pre {
+  @apply font-mono text-sm overflow-x-auto;
+}
+
+.code-block-header {
+  @apply flex justify-between items-center border-b border-border pb-2 mb-2;
+}
+
+/* Chat input area */
+.chat-input-container {
+  @apply fixed bottom-0 left-64 right-0 p-4 bg-[#272933] border-t-2 border-border;
+}
+
+.chat-input-wrapper {
+  @apply max-w-3xl mx-auto relative;
+}
+
+/* Message actions */
+.message-actions {
+  @apply opacity-0 transition-opacity absolute right-2 top-2 flex gap-2;
+}
+
+.message:hover .message-actions {
+  @apply opacity-100;
+}
