@@ -2,6 +2,13 @@ import React from 'react';
 import { Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ReactMarkdown from 'react-markdown';
+import { loadMarkdownFile } from '@/lib/responses/utils/markdownLoader';
+import type { MarkdownPath } from '@/lib/responses/types';
+
+// Add these imports for better markdown rendering
+import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 interface ChatMessageProps {
   content: string;
@@ -11,6 +18,7 @@ interface ChatMessageProps {
   metadata?: {
     images?: string[];
     embeds?: string[];
+    markdownPath?: MarkdownPath;
   };
 }
 
@@ -22,6 +30,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   metadata 
 }) => {
   const [copied, setCopied] = React.useState(false);
+  const [markdownContent, setMarkdownContent] = React.useState<string | null>(null);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(content);
@@ -29,12 +38,70 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  React.useEffect(() => {
+    if (type === 'markdown' && metadata?.markdownPath) {
+      loadMarkdownFile(metadata.markdownPath)
+        .then(setMarkdownContent)
+        .catch(console.error);
+    }
+  }, [type, metadata?.markdownPath]);
+
   const renderContent = () => {
     switch (type) {
       case 'markdown':
         return (
-          <ReactMarkdown className="prose prose-invert">
-            {content}
+          <ReactMarkdown
+            className="prose prose-invert max-w-none"
+            remarkPlugins={[remarkGfm]}
+            components={{
+              h1: ({ node, ...props }) => (
+                <h1 className="text-2xl font-bold mb-4 text-[#e6e6e6]" {...props} />
+              ),
+              h2: ({ node, ...props }) => (
+                <h2 className="text-xl font-bold mt-6 mb-3 text-[#e6e6e6]" {...props} />
+              ),
+              h3: ({ node, ...props }) => (
+                <h3 className="text-lg font-bold mt-4 mb-2 text-[#e6e6e6]" {...props} />
+              ),
+              p: ({ node, ...props }) => (
+                <p className="mb-4 text-[#e6e6e6]" {...props} />
+              ),
+              ul: ({ node, ...props }) => (
+                <ul className="list-disc pl-6 mb-4 text-[#e6e6e6]" {...props} />
+              ),
+              ol: ({ node, ...props }) => (
+                <ol className="list-decimal pl-6 mb-4 text-[#e6e6e6]" {...props} />
+              ),
+              li: ({ node, ...props }) => (
+                <li className="mb-1 text-[#e6e6e6]" {...props} />
+              ),
+              code: ({ node, inline, className, children, ...props }) => {
+                const match = /language-(\w+)/.exec(className || '');
+                return !inline && match ? (
+                  <SyntaxHighlighter
+                    style={oneDark}
+                    language={match[1]}
+                    PreTag="div"
+                    className="rounded-md"
+                    {...props}
+                  >
+                    {String(children).replace(/\n$/, '')}
+                  </SyntaxHighlighter>
+                ) : (
+                  <code className="bg-[#1a1a1a] px-1.5 py-0.5 rounded-md text-[#e6e6e6]" {...props}>
+                    {children}
+                  </code>
+                );
+              },
+              blockquote: ({ node, ...props }) => (
+                <blockquote className="border-l-4 border-[#e6e6e6]/20 pl-4 italic my-4" {...props} />
+              ),
+              a: ({ node, ...props }) => (
+                <a className="text-main hover:underline" {...props} />
+              ),
+            }}
+          >
+            {markdownContent || content}
           </ReactMarkdown>
         );
       
@@ -53,8 +120,24 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
       case 'lastfm-embed':
         return (
           <div className="bg-[#1a1a1a] p-4 rounded-base">
-            {/* We'll enhance this with LastFM styling later */}
-            <ReactMarkdown className="prose prose-invert">
+            <ReactMarkdown
+              className="prose prose-invert max-w-none"
+              remarkPlugins={[remarkGfm]}
+              components={{
+                h1: ({ node, ...props }) => (
+                  <h1 className="text-2xl font-bold mb-4 text-[#e6e6e6]" {...props} />
+                ),
+                h2: ({ node, ...props }) => (
+                  <h2 className="text-xl font-bold mt-6 mb-3 text-[#e6e6e6]" {...props} />
+                ),
+                p: ({ node, ...props }) => (
+                  <p className="mb-4 text-[#e6e6e6]" {...props} />
+                ),
+                ul: ({ node, ...props }) => (
+                  <ul className="list-disc pl-6 mb-4 text-[#e6e6e6]" {...props} />
+                ),
+              }}
+            >
               {content}
             </ReactMarkdown>
           </div>

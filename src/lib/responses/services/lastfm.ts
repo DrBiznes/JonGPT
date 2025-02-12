@@ -1,4 +1,4 @@
-const LASTFM_API_KEY = process.env.LASTFM_API_KEY || 'your-api-key';
+const LASTFM_API_KEY = import.meta.env.VITE_LASTFM_API_KEY || 'your-api-key';
 const LASTFM_BASE_URL = 'http://ws.audioscrobbler.com/2.0/';
 
 export interface LastFMAlbumInfo {

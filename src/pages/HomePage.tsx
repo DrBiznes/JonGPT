@@ -4,7 +4,7 @@ import { Image as ImageIcon, Send, Search, Music, Youtube } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useChatStore } from '@/lib/store';
-import { generateResponse } from '@/components/chat/ResponseGenerator';
+import { responseManager } from '@/lib/responses/responseManager';
 
 const getGreeting = () => {
   const hour = new Date().getHours();
@@ -19,11 +19,12 @@ const HomePage = () => {
   const navigate = useNavigate();
   const { createChat, addMessage } = useChatStore();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!input.trim()) return;
 
     const chatId = createChat();
     
+    // Add user message
     addMessage(chatId, {
       id: crypto.randomUUID(),
       content: input,
@@ -31,12 +32,17 @@ const HomePage = () => {
       timestamp: Date.now(),
     });
 
-    const response = generateResponse(input);
+    // Generate response using new response manager
+    const response = await responseManager.getResponse(input);
+    
+    // Add assistant message
     addMessage(chatId, {
       id: crypto.randomUUID(),
-      content: response,
+      content: response.content,
       role: 'assistant',
       timestamp: Date.now(),
+      type: response.type,
+      metadata: response.metadata
     });
 
     navigate('/chat');

@@ -1,4 +1,6 @@
 import { ResponseCategory, ChatResponse } from '../../types';
+import { loadMarkdownFile } from '../../utils/markdownLoader';
+import { lastfm } from '../../services/lastfm';
 
 // Keywords for KGLW and music-related content
 const MUSIC_KEYWORDS = [
@@ -7,30 +9,15 @@ const MUSIC_KEYWORDS = [
   'murder of the universe', 'butterfly 3000', 'infest'
 ];
 
-// Plain text responses for general music questions
-const GENERAL_RESPONSES = [
-  "King Gizzard & The Lizard Wizard is one of the most prolific and innovative bands out there!",
-  "I love discussing KGLW's music. Their diverse range of styles is incredible.",
-  "The way KGLW experiments with different genres and concepts is fascinating.",
-];
-
-// Album-specific responses
-const ALBUM_RESPONSES = {
-  'nonagon infinity': {
-    title: 'Nonagon Infinity',
-    description: "An infinite loop of high-energy psychedelic rock. The album that never ends!",
-    keyTracks: ['Robot Stop', 'Gamma Knife', 'People-Vultures']
-  },
-  'polygondwanaland': {
-    title: 'Polygondwanaland',
-    description: "A progressive rock masterpiece exploring themes of polyrhythms and sacred geometry.",
-    keyTracks: ['Crumbling Castle', 'The Fourth Colour', 'Horology']
-  },
+// Album markdown file mappings
+const ALBUM_MARKDOWN_FILES = {
+  'nonagon infinity': 'albums/nonagon-infinity',
+  'polygondwanaland': 'albums/polygondwanaland',
   // Add more albums...
 };
 
 const musicCategory: ResponseCategory = {
-  priority: 1,
+  priority: 2,
   matcher: (input: string) => {
     const lowercaseInput = input.toLowerCase();
     return MUSIC_KEYWORDS.some(keyword => lowercaseInput.includes(keyword));
@@ -39,22 +26,51 @@ const musicCategory: ResponseCategory = {
     const lowercaseInput = input.toLowerCase();
     
     // Check for specific album mentions
-    for (const [albumKey, albumInfo] of Object.entries(ALBUM_RESPONSES)) {
+    for (const [albumKey, markdownPath] of Object.entries(ALBUM_MARKDOWN_FILES)) {
       if (lowercaseInput.includes(albumKey)) {
-        // TODO: Fetch LastFM data for the album
-        return {
-          type: 'markdown',
-          content: `# ${albumInfo.title}\n\n${albumInfo.description}\n\n## Key Tracks\n${
-            albumInfo.keyTracks.map(track => `- ${track}`).join('\n')
-          }\n\n_I'll add LastFM data here once integrated!_`
-        };
+        try {
+          // Load markdown content
+          const markdownContent = await loadMarkdownFile(markdownPath);
+          
+          // Try to fetch LastFM data
+          const lastFmData = await lastfm.getAlbumInfo(
+            'King Gizzard & The Lizard Wizard',
+            albumKey
+          );
+
+          // If we have LastFM data, append it to the markdown
+          if (lastFmData) {
+            const lastFmSection = `
+## Current Statistics
+- Total Plays: ${lastFmData.playcount.toLocaleString()}
+- Listeners: ${lastFmData.listeners.toLocaleString()}
+- Tags: ${lastFmData.tags.join(', ')}
+
+## Track Listing
+${lastFmData.tracks.map(track => `- ${track.name}`).join('\n')}
+            `;
+            
+            return {
+              type: 'lastfm-embed',
+              content: markdownContent + '\n\n' + lastFmSection
+            };
+          }
+
+          // Return just the markdown if no LastFM data
+          return {
+            type: 'markdown',
+            content: markdownContent
+          };
+        } catch (error) {
+          console.error('Error loading album response:', error);
+        }
       }
     }
 
     // Return a general response for other music-related queries
     return {
       type: 'text',
-      content: GENERAL_RESPONSES[Math.floor(Math.random() * GENERAL_RESPONSES.length)]
+      content: "I love talking about KGLW! What aspect of their music would you like to discuss?"
     };
   }
 };
