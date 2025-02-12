@@ -6,14 +6,16 @@ import { useChatStore } from '@/lib/store';
 const ChatPage = () => {
   const navigate = useNavigate();
   const activeChat = useChatStore(state => state.activeChat);
+  const chats = useChatStore(state => state.chats);
 
   React.useEffect(() => {
-    if (!activeChat) {
+    // Redirect to home if there's no active chat or if the active chat doesn't exist
+    if (!activeChat || !chats.find(chat => chat.id === activeChat)) {
       navigate('/');
     }
-  }, [activeChat, navigate]);
+  }, [activeChat, chats, navigate]);
 
-  if (!activeChat) return null;
+  if (!activeChat || !chats.find(chat => chat.id === activeChat)) return null;
 
   return <ChatContainer />;
 };

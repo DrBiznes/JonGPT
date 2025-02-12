@@ -1,5 +1,5 @@
 import React from 'react';
-import { Copy, Check, Code } from 'lucide-react';
+import { Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ChatMessageProps {

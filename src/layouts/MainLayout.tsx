@@ -13,10 +13,10 @@ const MainLayout = ({ children }: MainLayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const chats = useChatStore(state => state.chats);
-  const { createChat, setActiveChat } = useChatStore();
+  const { setActiveChat } = useChatStore();
 
   const handleNewChat = () => {
-    createChat();
+    setActiveChat(null);
     navigate('/');
   };
 
@@ -63,7 +63,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
 
         <Button variant="neutral" className="w-full justify-start">
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Stonning
+          Back to The Stoning
         </Button>
       </div>
 

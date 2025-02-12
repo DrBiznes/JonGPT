@@ -103,7 +103,7 @@ const HomePage = () => {
               <Button 
                 variant="neutral" 
                 size="icon" 
-                className="absolute top-2 right-3 rounded-full bg-[#ff6a6a]"
+                className="absolute top-2 right-6 rounded-full bg-[#ff6a6a]"
                 onClick={handleSubmit}
               >
                 <Send className="w-4 h-4" />
