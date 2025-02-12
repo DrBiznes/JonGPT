@@ -22,6 +22,62 @@ interface ChatMessageProps {
   };
 }
 
+const MarkdownRenderer: React.FC<{ content: string }> = ({ content }) => (
+  <ReactMarkdown
+    className="prose prose-invert max-w-none"
+    remarkPlugins={[remarkGfm]}
+    components={{
+      h1: ({ node, ...props }) => (
+        <h1 className="text-2xl font-bold mb-4 text-[#e6e6e6]" {...props} />
+      ),
+      h2: ({ node, ...props }) => (
+        <h2 className="text-xl font-bold mt-6 mb-3 text-[#e6e6e6]" {...props} />
+      ),
+      h3: ({ node, ...props }) => (
+        <h3 className="text-lg font-bold mt-4 mb-2 text-[#e6e6e6]" {...props} />
+      ),
+      p: ({ node, ...props }) => (
+        <p className="mb-4 text-[#e6e6e6]" {...props} />
+      ),
+      ul: ({ node, ...props }) => (
+        <ul className="list-disc pl-6 mb-4 text-[#e6e6e6]" {...props} />
+      ),
+      ol: ({ node, ...props }) => (
+        <ol className="list-decimal pl-6 mb-4 text-[#e6e6e6]" {...props} />
+      ),
+      li: ({ node, ...props }) => (
+        <li className="mb-1 text-[#e6e6e6]" {...props} />
+      ),
+      code: ({ node, inline, className, children, ...props }) => {
+        const match = /language-(\w+)/.exec(className || '');
+        return !inline && match ? (
+          <SyntaxHighlighter
+            style={oneDark}
+            language={match[1]}
+            PreTag="div"
+            className="rounded-md"
+            {...props}
+          >
+            {String(children).replace(/\n$/, '')}
+          </SyntaxHighlighter>
+        ) : (
+          <code className="bg-[#1a1a1a] px-1.5 py-0.5 rounded-md text-[#e6e6e6]" {...props}>
+            {children}
+          </code>
+        );
+      },
+      blockquote: ({ node, ...props }) => (
+        <blockquote className="border-l-4 border-[#e6e6e6]/20 pl-4 italic my-4" {...props} />
+      ),
+      a: ({ node, ...props }) => (
+        <a className="text-main hover:underline" {...props} />
+      ),
+    }}
+  >
+    {content}
+  </ReactMarkdown>
+);
+
 export const ChatMessage: React.FC<ChatMessageProps> = ({ 
   content, 
   role, 
@@ -47,120 +103,50 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   }, [type, metadata?.markdownPath]);
 
   const renderContent = () => {
-    switch (type) {
-      case 'markdown':
-        return (
-          <ReactMarkdown
-            className="prose prose-invert max-w-none"
-            remarkPlugins={[remarkGfm]}
-            components={{
-              h1: ({ node, ...props }) => (
-                <h1 className="text-2xl font-bold mb-4 text-[#e6e6e6]" {...props} />
-              ),
-              h2: ({ node, ...props }) => (
-                <h2 className="text-xl font-bold mt-6 mb-3 text-[#e6e6e6]" {...props} />
-              ),
-              h3: ({ node, ...props }) => (
-                <h3 className="text-lg font-bold mt-4 mb-2 text-[#e6e6e6]" {...props} />
-              ),
-              p: ({ node, ...props }) => (
-                <p className="mb-4 text-[#e6e6e6]" {...props} />
-              ),
-              ul: ({ node, ...props }) => (
-                <ul className="list-disc pl-6 mb-4 text-[#e6e6e6]" {...props} />
-              ),
-              ol: ({ node, ...props }) => (
-                <ol className="list-decimal pl-6 mb-4 text-[#e6e6e6]" {...props} />
-              ),
-              li: ({ node, ...props }) => (
-                <li className="mb-1 text-[#e6e6e6]" {...props} />
-              ),
-              code: ({ node, inline, className, children, ...props }) => {
-                const match = /language-(\w+)/.exec(className || '');
-                return !inline && match ? (
-                  <SyntaxHighlighter
-                    style={oneDark}
-                    language={match[1]}
-                    PreTag="div"
-                    className="rounded-md"
-                    {...props}
-                  >
-                    {String(children).replace(/\n$/, '')}
-                  </SyntaxHighlighter>
-                ) : (
-                  <code className="bg-[#1a1a1a] px-1.5 py-0.5 rounded-md text-[#e6e6e6]" {...props}>
-                    {children}
-                  </code>
-                );
-              },
-              blockquote: ({ node, ...props }) => (
-                <blockquote className="border-l-4 border-[#e6e6e6]/20 pl-4 italic my-4" {...props} />
-              ),
-              a: ({ node, ...props }) => (
-                <a className="text-main hover:underline" {...props} />
-              ),
-            }}
-          >
-            {markdownContent || content}
-          </ReactMarkdown>
-        );
-      
-      case 'youtube-embed':
-        return metadata?.embeds?.[0] ? (
-          <div className="relative w-full pt-[56.25%]">
-            <iframe
-              src={metadata.embeds[0]}
-              className="absolute top-0 left-0 w-full h-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          </div>
-        ) : content;
-      
-      case 'lastfm-embed':
-        return (
-          <div className="bg-[#1a1a1a] p-4 rounded-base">
-            <ReactMarkdown
-              className="prose prose-invert max-w-none"
-              remarkPlugins={[remarkGfm]}
-              components={{
-                h1: ({ node, ...props }) => (
-                  <h1 className="text-2xl font-bold mb-4 text-[#e6e6e6]" {...props} />
-                ),
-                h2: ({ node, ...props }) => (
-                  <h2 className="text-xl font-bold mt-6 mb-3 text-[#e6e6e6]" {...props} />
-                ),
-                p: ({ node, ...props }) => (
-                  <p className="mb-4 text-[#e6e6e6]" {...props} />
-                ),
-                ul: ({ node, ...props }) => (
-                  <ul className="list-disc pl-6 mb-4 text-[#e6e6e6]" {...props} />
-                ),
-              }}
-            >
-              {content}
-            </ReactMarkdown>
-          </div>
-        );
-      
-      case 'image':
-        return (
-          <div className="space-y-2">
-            {metadata?.images?.map((image, index) => (
-              <img 
-                key={index}
-                src={image}
-                alt={`Shared image ${index + 1}`}
-                className="max-w-full rounded-base"
+    // Always use markdown rendering for assistant messages
+    if (role === 'assistant') {
+      switch (type) {
+        case 'youtube-embed':
+          return metadata?.embeds?.[0] ? (
+            <div className="relative w-full pt-[56.25%]">
+              <iframe
+                src={metadata.embeds[0]}
+                className="absolute top-0 left-0 w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
               />
-            ))}
-            <p>{content}</p>
-          </div>
-        );
-      
-      default:
-        return <div className="prose prose-invert">{content}</div>;
+            </div>
+          ) : <MarkdownRenderer content={content} />;
+        
+        case 'lastfm-embed':
+          return (
+            <div className="bg-[#1a1a1a] p-4 rounded-base">
+              <MarkdownRenderer content={content} />
+            </div>
+          );
+        
+        case 'image':
+          return (
+            <div className="space-y-2">
+              {metadata?.images?.map((image, index) => (
+                <img 
+                  key={index}
+                  src={image}
+                  alt={`Shared image ${index + 1}`}
+                  className="max-w-full rounded-base"
+                />
+              ))}
+              <MarkdownRenderer content={content} />
+            </div>
+          );
+        
+        default:
+          return <MarkdownRenderer content={markdownContent || content} />;
+      }
     }
+
+    // For user messages, just render plain text
+    return <div className="prose prose-invert">{content}</div>;
   };
 
   return (
